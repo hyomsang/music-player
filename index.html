@@ -35,13 +35,10 @@ body{
   isolation:isolate;
 }
 
-.player::before{
-  content:"";
+.bg-blur{
   position:absolute;
   inset:-36px;
-  background:
-    linear-gradient(rgba(20,25,30,.06),rgba(20,25,30,.32)),
-    url("https://i.ytimg.com/vi_webp/I7cx1r3K0gM/maxresdefault.webp") center/cover;
+  background:center/cover no-repeat;
   filter:blur(42px) saturate(130%);
   opacity:.58;
   z-index:-1;
@@ -62,31 +59,17 @@ body{
   border-radius:24px;
   overflow:hidden;
   flex-shrink:0;
-  background:
-    linear-gradient(rgba(20,25,30,.06),rgba(20,25,30,.46)),
-    url("https://i.ytimg.com/vi_webp/I7cx1r3K0gM/maxresdefault.webp") center/cover;
+  background:center/cover no-repeat;
   box-shadow:none;
-}
-
-.cover::before{
-  content:"愛如火";
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  color:white;
-  font-size:46px;
-  font-family:Georgia,serif;
-  font-style:italic;
-  transform:rotate(-7deg);
-  text-shadow:0 4px 14px rgba(0,0,0,.35);
 }
 
 .cover::after{
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(120deg,rgba(255,255,255,.35),transparent 30%,transparent 70%,rgba(255,255,255,.15));
+  background:
+    linear-gradient(rgba(20,25,30,.06),rgba(20,25,30,.46)),
+    linear-gradient(120deg,rgba(255,255,255,.35),transparent 30%,transparent 70%,rgba(255,255,255,.15));
 }
 
 .info{
@@ -99,17 +82,25 @@ body{
 }
 
 .title{
+  max-width:210px;
   font-size:22px;
   font-weight:700;
   letter-spacing:-1px;
   color:#111;
-  line-height:1;
+  line-height:1.1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .artist{
+  max-width:210px;
   font-size:12px;
   color:#666;
   margin-top:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .heart{
@@ -143,17 +134,7 @@ body{
   height:100%;
   background:white;
   border-radius:999px;
-  animation:progressMove 35s linear infinite;
-  animation-play-state:paused;
-}
-
-.player.playing .bar{
-  animation-play-state:running;
-}
-
-@keyframes progressMove{
-  0%{width:0%;}
-  100%{width:100%;}
+  transition:width .3s linear;
 }
 
 .controls{
@@ -210,24 +191,26 @@ button{
 <div id="youtube-player"></div>
 
 <div class="player" id="musicCard">
+  <div class="bg-blur" id="bgBlur"></div>
+
   <div class="inner">
-    <div class="cover"></div>
+    <div class="cover" id="cover"></div>
 
     <div class="info">
       <div>
-        <div class="title">愛如火</div>
-        <div class="artist">苏星婕</div>
+        <div class="title" id="songTitle">Loading...</div>
+        <div class="artist" id="songArtist">YouTube Music</div>
       </div>
       <div class="heart">♥</div>
     </div>
 
     <div class="progress-wrap">
       <div class="time">
-        <span>1:24</span>
-        <span>3:48</span>
+        <span id="currentTime">0:00</span>
+        <span id="duration">0:00</span>
       </div>
       <div class="progress">
-        <div class="bar"></div>
+        <div class="bar" id="progressBar"></div>
       </div>
     </div>
 
@@ -256,6 +239,9 @@ button{
 <script>
 let player;
 let isReady = false;
+let progressTimer = null;
+
+const playlistId = "PLuhjoDuDDGqmGwHX4fGRzdl5VoIni0-YC";
 
 function onYouTubeIframeAPIReady(){
   player = new YT.Player("youtube-player", {
@@ -263,7 +249,7 @@ function onYouTubeIframeAPIReady(){
     height: 200,
     playerVars: {
       listType: "playlist",
-      list: "PLuhjoDuDDGqmGwHX4fGRzdl5VoIni0-YC",
+      list: playlistId,
       controls: 0,
       disablekb: 1,
       modestbranding: 1,
@@ -273,21 +259,74 @@ function onYouTubeIframeAPIReady(){
     events: {
       onReady: function(){
         isReady = true;
+        setTimeout(updateTrackInfo, 800);
       },
       onStateChange: function(event){
-        const card = document.getElementById("musicCard");
+        updateTrackInfo();
+
         const btn = document.getElementById("playButton");
 
         if(event.data === YT.PlayerState.PLAYING){
-          card.classList.add("playing");
           btn.textContent = "Ⅱ";
+          startProgress();
         }else{
-          card.classList.remove("playing");
           btn.textContent = "▶";
+          stopProgress();
+        }
+
+        if(event.data === YT.PlayerState.CUED){
+          updateTrackInfo();
         }
       }
     }
   });
+}
+
+function parseTitle(rawTitle){
+  let title = rawTitle || "Unknown Track";
+  let artist = "YouTube Music";
+
+  const separators = [" - ", " – ", " — ", " | "];
+
+  for(const sep of separators){
+    if(title.includes(sep)){
+      const parts = title.split(sep);
+      artist = parts[0].trim();
+      title = parts.slice(1).join(sep).trim();
+      break;
+    }
+  }
+
+  title = title
+    .replace(/\\(Official.*?\\)/gi, "")
+    .replace(/\\[Official.*?\\]/gi, "")
+    .replace(/\\(Lyrics.*?\\)/gi, "")
+    .replace(/\\[Lyrics.*?\\]/gi, "")
+    .replace(/\\(Audio.*?\\)/gi, "")
+    .replace(/\\[Audio.*?\\]/gi, "")
+    .trim();
+
+  return { title, artist };
+}
+
+function updateTrackInfo(){
+  if(!player || !isReady) return;
+
+  const data = player.getVideoData();
+  const rawTitle = data.title || "Loading...";
+  const videoId = data.video_id;
+
+  const parsed = parseTitle(rawTitle);
+
+  document.getElementById("songTitle").textContent = parsed.title;
+  document.getElementById("songArtist").textContent = parsed.artist;
+
+  if(videoId){
+    const thumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+    document.getElementById("cover").style.backgroundImage = `url('${thumb}')`;
+    document.getElementById("bgBlur").style.backgroundImage = `url('${thumb}')`;
+  }
 }
 
 function togglePlay(){
@@ -305,14 +344,48 @@ function togglePlay(){
 function nextTrack(){
   if(!isReady) return;
   player.nextVideo();
+  setTimeout(updateTrackInfo, 900);
 }
 
 function prevTrack(){
   if(!isReady) return;
   player.previousVideo();
+  setTimeout(updateTrackInfo, 900);
+}
+
+function startProgress(){
+  stopProgress();
+
+  progressTimer = setInterval(() => {
+    if(!player || !isReady) return;
+
+    const current = player.getCurrentTime() || 0;
+    const duration = player.getDuration() || 0;
+
+    document.getElementById("currentTime").textContent = formatTime(current);
+    document.getElementById("duration").textContent = formatTime(duration);
+
+    if(duration > 0){
+      const percent = Math.min((current / duration) * 100, 100);
+      document.getElementById("progressBar").style.width = percent + "%";
+    }
+  }, 500);
+}
+
+function stopProgress(){
+  if(progressTimer){
+    clearInterval(progressTimer);
+    progressTimer = null;
+  }
+}
+
+function formatTime(seconds){
+  seconds = Math.floor(seconds || 0);
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2,"0")}`;
 }
 </script>
 
 </body>
 </html>
-
