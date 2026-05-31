@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -214,7 +215,7 @@ button{
     <div class="info">
       <div>
         <div class="title" id="songTitle">Loading...</div>
-        <div class="artist" id="songArtist">YouTube Music</div>
+        <div class="artist" id="songArtist">열심히 살자</div>
       </div>
       <div class="heart">♥</div>
     </div>
@@ -295,14 +296,12 @@ function onYouTubeIframeAPIReady(){
 
 function parseTitle(rawTitle){
   let title = rawTitle || "Unknown Track";
-  let artist = "YouTube Music";
 
   const separators = [" - ", " – ", " — ", " | "];
 
   for(const sep of separators){
     if(title.includes(sep)){
       const parts = title.split(sep);
-      artist = parts[0].trim();
       title = parts.slice(1).join(sep).trim();
       break;
     }
@@ -317,17 +316,17 @@ function parseTitle(rawTitle){
     .replace(/\[Audio.*?\]/gi, "")
     .trim();
 
-  return { title, artist };
+  return title || "Unknown Track";
 }
 
 function updateTrackInfo(){
   if(!player || !isReady) return;
 
   const data = player.getVideoData();
-  const parsed = parseTitle(data.title || "Loading...");
+  const title = parseTitle(data.title || "Loading...");
 
-  document.getElementById("songTitle").textContent = parsed.title;
-  document.getElementById("songArtist").textContent = parsed.artist;
+  document.getElementById("songTitle").textContent = title;
+  document.getElementById("songArtist").textContent = "열심히 살자";
 }
 
 function togglePlay(){
