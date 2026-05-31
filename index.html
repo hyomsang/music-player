@@ -2,34 +2,116 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Music Player</title>
-
+<title>Turntable Music Player</title>
 <style>
 body{
-    margin:0;
-    background:#111;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f1ec;
+  font-family:Arial,sans-serif;
+}
+
+.player{
+  width:360px;
+  padding:26px;
+  border-radius:28px;
+  background:linear-gradient(145deg,#d8d8d8,#f7f7f7);
+  box-shadow:0 25px 60px rgba(0,0,0,.25);
+  position:relative;
+}
+
+.record{
+  width:260px;
+  height:260px;
+  margin:auto;
+  border-radius:50%;
+  background:
+    radial-gradient(circle,#333 0 22%,#111 23% 35%,#050505 36% 100%);
+  box-shadow:inset 0 0 30px rgba(255,255,255,.12);
+  animation:spin 7s linear infinite;
+}
+
+.label{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#5d4c46,#1f1a18);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  font-size:18px;
+  position:absolute;
+  top:101px;
+  left:125px;
+}
+
+.arm{
+  position:absolute;
+  width:120px;
+  height:8px;
+  background:#555;
+  top:95px;
+  right:20px;
+  transform:rotate(55deg);
+  transform-origin:right center;
+  border-radius:10px;
+}
+
+.needle{
+  position:absolute;
+  width:28px;
+  height:28px;
+  background:#333;
+  top:180px;
+  right:75px;
+  transform:rotate(25deg);
+  border-radius:4px;
+}
+
+h2{
+  text-align:center;
+  margin:24px 0 6px;
+}
+
+p{
+  text-align:center;
+  margin:0 0 18px;
+  color:#555;
 }
 
 iframe{
-    width:100%;
-    max-width:900px;
-    height:500px;
-    border:none;
-    border-radius:16px;
+  width:100%;
+  height:220px;
+  border:0;
+  border-radius:18px;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
 }
 </style>
 </head>
 
 <body>
+  <div class="player">
+    <div class="record"></div>
+    <div class="label">My<br>Playlist</div>
+    <div class="arm"></div>
+    <div class="needle"></div>
 
-<iframe
-src="https://www.youtube.com/embed/videoseries?list=PLuhjoDuDDGqmGwHX4fGRzdl5VoIni0-YC"
-allow="autoplay">
-</iframe>
+    <h2>🎧 Music Player</h2>
+    <p>YouTube Playlist</p>
 
+    <iframe
+      src="https://www.youtube.com/embed/videoseries?list=PLuhjoDuDDGqmGwHX4fGRzdl5VoIni0-YC"
+      allow="autoplay">
+    </iframe>
+  </div>
 </body>
 </html>
