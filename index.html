@@ -1,211 +1,284 @@
-```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notion Music Widget</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+    html,
+    body {
+      width: 350px;
+      height: 500px;
+      background: transparent;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
 
-html,
-body{
-  width:100%;
-  height:100%;
-  background:transparent;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
-}
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-body{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
+    .player {
+      position: relative;
+      width: 350px;
+      height: 500px;
+      border-radius: 36px;
+      overflow: hidden;
+      background: rgba(255,255,255,.28);
+      backdrop-filter: blur(30px) saturate(170%);
+      -webkit-backdrop-filter: blur(30px) saturate(170%);
+      border: 1px solid rgba(255,255,255,.42);
+      box-shadow:
+        0 16px 40px rgba(0,0,0,.14),
+        inset 0 1px 0 rgba(255,255,255,.75);
+    }
 
-.player{
-  width:350px;
-  height:500px;
+    .player::before {
+      content: "";
+      position: absolute;
+      inset: -40px;
+      background:
+        linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.42)),
+        radial-gradient(circle at 28% 25%, rgba(255,255,255,.9), transparent 18%),
+        radial-gradient(circle at 70% 40%, #b8c3ca, transparent 30%),
+        linear-gradient(135deg, #8192a0, #d2b497 45%, #354251 88%);
+      filter: blur(55px) saturate(130%) brightness(.9);
+      transform: scale(1.2);
+      opacity: .55;
+      z-index: 0;
+    }
 
-  border-radius:36px;
+    .inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
 
-  background:rgba(255,255,255,.18);
+    .cover {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      border-radius: 30px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background:
+        linear-gradient(rgba(20,25,30,.04), rgba(20,25,30,.48)),
+        radial-gradient(circle at 28% 25%, rgba(255,255,255,.9), transparent 16%),
+        radial-gradient(circle at 70% 40%, #b8c3ca, transparent 27%),
+        linear-gradient(135deg, #8192a0, #d2b497 45%, #354251 88%);
+      box-shadow:
+        0 18px 36px rgba(34,43,55,.24),
+        inset 0 1px 0 rgba(255,255,255,.58),
+        inset 0 -1px 0 rgba(0,0,0,.12);
+    }
 
-  backdrop-filter:blur(30px);
-  -webkit-backdrop-filter:blur(30px);
+    .cover::before {
+      content: "愛如火";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: 52px;
+      font-style: italic;
+      text-shadow: 0 5px 18px rgba(0,0,0,.36);
+      transform: rotate(-7deg);
+    }
 
-  border:1px solid rgba(255,255,255,.35);
+    .cover::after {
+      content: "苏星婕";
+      position: absolute;
+      left: 50%;
+      bottom: 56px;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      letter-spacing: .4em;
+      writing-mode: vertical-rl;
+      text-shadow: 0 2px 12px rgba(0,0,0,.35);
+    }
 
-  box-shadow:
-  0 12px 40px rgba(0,0,0,.12),
-  inset 0 1px 0 rgba(255,255,255,.6);
+    .shine {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(255,255,255,.46), transparent 30%, transparent 68%, rgba(255,255,255,.18));
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
 
-  overflow:hidden;
-}
+    .info {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-top: 15px;
+      padding: 0 4px;
+    }
 
-.cover{
-  height:330px;
+    h1 {
+      margin: 0;
+      font-size: 27px;
+      line-height: 1;
+      letter-spacing: -.05em;
+      color: #111;
+    }
 
-  position:relative;
+    .artist {
+      margin-top: 4px;
+      font-size: 14px;
+      color: rgba(0,0,0,.52);
+      font-weight: 500;
+    }
 
-  background:
-  linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.4)),
-  url("https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop")
-  center/cover;
+    .heart {
+      border: 0;
+      background: transparent;
+      color: #EB3B17;
+      font-size: 30px;
+      line-height: 1;
+      cursor: pointer;
+      text-shadow: 0 8px 18px rgba(235,59,23,.24);
+    }
 
-}
+    .progress-area {
+      margin-top: 14px;
+      padding: 0 4px;
+    }
 
-.cover::after{
-  content:"";
+    .time {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 650;
+      color: rgba(0,0,0,.5);
+    }
 
-  position:absolute;
-  inset:0;
+    .progress {
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.45);
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.08);
+    }
 
-  background:
-  linear-gradient(
-  135deg,
-  rgba(255,255,255,.35),
-  transparent 35%,
-  transparent 70%,
-  rgba(255,255,255,.15)
-  );
+    .bar {
+      width: 43%;
+      height: 100%;
+      border-radius: inherit;
+      background: rgba(255,255,255,.95);
+    }
 
-}
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 20px;
+      color: rgba(0,0,0,.72);
+    }
 
-.info{
-  padding:18px 20px 0;
-}
+    button {
+      font-family: inherit;
+    }
 
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .control {
+      border: 0;
+      background: transparent;
+      color: currentColor;
+      cursor: pointer;
+      padding: 0;
+      display: grid;
+      place-items: center;
+    }
 
-.title{
-  font-size:28px;
-  font-weight:700;
-  letter-spacing:-1px;
-}
+    .skip {
+      width: 32px;
+      height: 32px;
+    }
 
-.artist{
-  margin-top:4px;
-  color:#666;
-  font-size:14px;
-}
+    .pause {
+      width: 40px;
+      height: 40px;
+    }
 
-.heart{
-  color:#EB3B17;
-  font-size:24px;
-}
+    .skip svg {
+      width: 27px;
+      height: 27px;
+    }
 
-.progress-wrap{
-  padding:14px 20px 0;
-}
+    .pause svg {
+      width: 32px;
+      height: 32px;
+    }
 
-.time{
-  display:flex;
-  justify-content:space-between;
-  font-size:11px;
-  color:#666;
-  margin-bottom:8px;
-}
-
-.progress{
-  height:4px;
-  border-radius:999px;
-  background:rgba(0,0,0,.08);
-}
-
-.bar{
-  width:42%;
-  height:100%;
-  border-radius:999px;
-  background:#fff;
-}
-
-.controls{
-  margin-top:18px;
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
-  gap:44px;
-}
-
-.icon{
-  font-size:26px;
-  color:#222;
-}
-
-.play{
-  width:52px;
-  height:52px;
-
-  border-radius:50%;
-
-  background:#111;
-
-  color:white;
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
-  font-size:18px;
-}
-</style>
+    .control svg {
+      fill: currentColor;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,.12));
+    }
+  </style>
 </head>
-
 <body>
+  <main class="player">
+    <div class="inner">
+      <div class="cover">
+        <div class="shine"></div>
+      </div>
 
-<div class="player">
+      <div class="info">
+        <div>
+          <h1>愛如火</h1>
+          <p class="artist">苏星婕</p>
+        </div>
+        <button class="heart" aria-label="좋아요">♥</button>
+      </div>
 
-<div class="cover"></div>
+      <div class="progress-area">
+        <div class="time">
+          <span>1:24</span>
+          <div class="progress"><div class="bar"></div></div>
+          <span>3:48</span>
+        </div>
+      </div>
 
-<div class="info">
+      <div class="controls" aria-label="재생 컨트롤">
+        <button class="control skip" aria-label="이전 곡">
+          <svg viewBox="0 0 44 44" aria-hidden="true">
+            <path d="M18.5 12.8c1.1-.8 2.6 0 2.6 1.4v15.6c0 1.4-1.5 2.2-2.6 1.4L8.3 23.4c-.9-.7-.9-2.1 0-2.8l10.2-7.8Z"/>
+            <path d="M34.2 12.8c1.1-.8 2.6 0 2.6 1.4v15.6c0 1.4-1.5 2.2-2.6 1.4L24 23.4c-.9-.7-.9-2.1 0-2.8l10.2-7.8Z"/>
+          </svg>
+        </button>
 
-<div class="row">
-<div>
-<div class="title">愛如火</div>
-<div class="artist">苏星婕</div>
-</div>
+        <button class="control pause" aria-label="일시정지">
+          <svg viewBox="0 0 44 44" aria-hidden="true">
+            <rect x="13" y="9" width="7.5" height="26" rx="2.4"/>
+            <rect x="23.5" y="9" width="7.5" height="26" rx="2.4"/>
+          </svg>
+        </button>
 
-<div class="heart">♥</div>
-</div>
-
-</div>
-
-<div class="progress-wrap">
-
-<div class="time">
-<span>1:24</span>
-<span>3:48</span>
-</div>
-
-<div class="progress">
-<div class="bar"></div>
-</div>
-
-</div>
-
-<div class="controls">
-
-<div class="icon">⏮</div>
-
-<div class="play">Ⅱ</div>
-
-<div class="icon">⏭</div>
-
-</div>
-
-</div>
-
+        <button class="control skip" aria-label="다음 곡">
+          <svg viewBox="0 0 44 44" aria-hidden="true">
+            <path d="M25.5 12.8c-1.1-.8-2.6 0-2.6 1.4v15.6c0 1.4 1.5 2.2 2.6 1.4l10.2-7.8c.9-.7.9-2.1 0-2.8l-10.2-7.8Z"/>
+            <path d="M9.8 12.8c-1.1-.8-2.6 0-2.6 1.4v15.6c0 1.4 1.5 2.2 2.6 1.4L20 23.4c.9-.7.9-2.1 0-2.8L9.8 12.8Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
 </body>
 </html>
-```
